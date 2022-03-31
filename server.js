@@ -2,6 +2,12 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
+const mongoSanitize = require("express-mongo-sanitize");
+const helmet = require("helmet");
+const xss = require("xss-clean");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
+const cors = require("cors");
 
 dotenv.config({ path: "./config/config.env" });
 
@@ -11,6 +17,18 @@ const app = express();
 
 //add cookie parser
 app.use(cookieParser());
+app.use(hpp());
+app.use(mongoSanitize());
+app.use(helmet());
+app.use(cors());
+
+app.use(xss());
+
+const limiter = rateLimit({
+  windowsMs: 10 * 60 * 1000, //10mins
+  max: 100,
+});
+app.use(limiter);
 
 const hospitals = require("./routes/hospitals.js");
 const register = require("./routes/auth");
